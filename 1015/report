@@ -1,1 +1,207 @@
+[6.10.1 단답형 (Short Answer)]
+1. 006Bh[cite: 1]
+2. 0012h[cite: 1]
+3. 64BBh[cite: 1]
+4. A857h[cite: 2]
+5. BFAFF69Fh[cite: 2]
+6. 0000000050509B64h[cite: 2]
+7. a. 00101101b / b. 01001000b / c. 01101111b / d. 10100011b[cite: 2]
+8. a. 85h / b. 34h / c. BFh / d. AEh[cite: 2]
+9. a. CF=0, ZF=0, SF=0 / b. CF=0, ZF=0, SF=0 / c. CF=1, ZF=0, SF=1[cite: 2]
+10. jecxz[cite: 2]
+11. 두 명령어 모두 Carry 플래그가 0이고 Zero 플래그가 0일 때(CF=0 AND ZF=0) 분기합니다.[cite: 2]
+12. 1[cite: 2]
+13. 1[cite: 3]
+14. 0[cite: 3]
+15. True[cite: 3]
+16. True[cite: 3]
+17. 0000000000000080h[cite: 3]
+18. 0000000000808080h[cite: 3]
+19. 0000000080808080h[cite: 3]
 
+=========================================
+
+[6.10.2 알고리즘 워크벤치 (Algorithm Workbench)]
+
+; 1. AL의 ASCII 숫자를 이진수 값으로 변환[cite: 3]
+and al, 0Fh
+
+; 2. 32비트 메모리 피연산자의 패리티 계산 (B0 XOR B1 XOR B2 XOR B3)[cite: 3]
+mov al, byte ptr [mem32]
+xor al, byte ptr [mem32+1]
+xor al, byte ptr [mem32+2]
+xor al, byte ptr [mem32+3]
+
+; 3. SetX에는 속하지만 SetY에는 속하지 않는 비트를 EAX에 생성[cite: 3]
+mov eax, SetX
+mov ebx, SetY
+not ebx
+and eax, ebx
+
+; 4. DX의 부호 없는 정수가 CX보다 작거나 같을 때 L1으로 점프[cite: 3]
+cmp dx, cx
+jbe L1
+
+; 5. AX의 부호 있는 정수가 CX보다 클 때 L2로 점프[cite: 3]
+cmp ax, cx
+jg L2
+
+; 6. AL의 비트 0과 1을 지우고, 결과가 0이면 L3, 아니면 L4로 점프[cite: 4]
+and al, 11111100b
+jz L3
+jmp L4
+
+; 7. if (val1 > ecx) AND (ecx > edx) X = 1 else X = 2[cite: 4]
+cmp val1, ecx
+jle L_Else
+cmp ecx, edx
+jle L_Else
+mov X, 1
+jmp L_End
+L_Else:
+mov X, 2
+L_End:
+
+; 8. if (ebx > ecx) OR (ebx > val1) X = 1 else X = 2[cite: 4]
+cmp ebx, ecx
+jg L_If
+cmp ebx, val1
+jg L_If
+mov X, 2
+jmp L_End
+L_If:
+mov X, 1
+L_End:
+
+; 9. if (ebx > ecx AND ebx > edx) OR (edx > eax) X = 1 else X = 2[cite: 4]
+cmp ebx, ecx
+jle L_OrCheck
+cmp ebx, edx
+jg L_If
+L_OrCheck:
+cmp edx, eax
+jg L_If
+mov X, 2
+jmp L_End
+L_If:
+mov X, 1
+L_End:
+
+; 10. while N > 0 내부의 if N != 3 AND (N < A OR N > B)[cite: 4]
+L_While:
+    cmp N, 0
+    jle L_EndWhile
+    cmp N, 3
+    je L_Else
+    cmp N, A
+    jl L_If
+    cmp N, B
+    jg L_If
+    jmp L_Else
+L_If:
+    sub N, 2
+    jmp L_While
+L_Else:
+    sub N, 1
+    jmp L_While
+L_EndWhile:
+
+=========================================
+
+[6.11.2 프로그래밍 연습문제 (Programming Exercises) 핵심 로직]
+
+; 1. 배열 채우기 (Filling an Array)[cite: 5]
+FillArray PROC
+    push ebp
+    mov ebp, esp
+    pushad
+    mov edi, [ebp+20]
+    mov ecx, [ebp+16]
+    mov ebx, [ebp+12]
+    mov edx, [ebp+8]
+    mov eax, edx
+    sub eax, ebx
+    inc eax
+L1: push eax
+    call RandomRange
+    add eax, ebx
+    mov [edi], eax
+    add edi, 4
+    pop eax
+    loop L1
+    popad
+    pop ebp
+    ret 16
+FillArray ENDP
+
+; 2. 지정된 범위 내의 배열 요소 합산 (Summing Array Elements in a Range)[cite: 5]
+CalcSum PROC
+    push ebp
+    mov ebp, esp
+    push ebx
+    push ecx
+    push edx
+    push esi
+    mov esi, [ebp+20]
+    mov ecx, [ebp+16]
+    mov ebx, [ebp+12]
+    mov edx, [ebp+8]
+    xor eax, eax
+L1: mov edi, [esi]
+    cmp edi, ebx
+    jl L_Next
+    cmp edi, edx
+    jg L_Next
+    add eax, edi
+L_Next:
+    add esi, 4
+    loop L1
+    pop esi
+    pop edx
+    pop ecx
+    pop ebx
+    pop ebp
+    ret 16
+CalcSum ENDP
+
+; 3. 시험 점수 평가 (Test Score Evaluation)[cite: 5, 6]
+CalcGrade PROC
+    cmp eax, 90
+    jae IsA
+    cmp eax, 80
+    jae IsB
+    cmp eax, 70
+    jae IsC
+    cmp eax, 60
+    jae IsD
+    mov al, 'F'
+    jmp EndProg
+IsA: mov al, 'A'
+     jmp EndProg
+IsB: mov al, 'B'
+     jmp EndProg
+IsC: mov al, 'C'
+     jmp EndProg
+IsD: mov al, 'D'
+EndProg:
+    ret
+CalcGrade ENDP
+
+; 6. 확률 및 색상 (Probabilities and Colors)[cite: 7]
+; 루프 내에서 난수(0~9)를 생성하여 색상 분기 처리
+mov eax, 10
+call RandomRange
+cmp eax, 2
+jbe White_Label    ; 0, 1, 2 (30%)
+cmp eax, 3
+je Blue_Label      ; 3 (10%)
+jmp Green_Label    ; 4~9 (60%)
+
+; 8. PIN 검증 (Validating a PIN)[cite: 7, 8]
+; esi를 인덱스로 사용하여 검증 (루프 내부 로직)
+mov al, [edi+esi]
+cmp al, min_array[esi]
+jb Invalid_Digit
+cmp al, max_array[esi]
+ja Invalid_Digit
+; 정상일 경우 esi 증가 후 반복, 실패 시 eax에 esi+1 저장 후 리턴
