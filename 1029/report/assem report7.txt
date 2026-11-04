@@ -1,0 +1,347 @@
+7.9.1 Short Answer (단답형 1~10번)
+
+1. In the following code sequence, show the value of AL after each shift or rotate instruction has executed:
+(번역: 다음 코드 시퀀스에서 각 시프트 또는 순환 명령어가 실행된 후 AL 레지스터의 값을 구하세요.)
+mov al, 0D4h (초기값: 1101 0100b)
+a. shr al, 1  ; 정답: 6Ah (0110 1010b, 논리적 우측 시프트)
+b. sar al, 1  ; 정답: EAh (1110 1010b, 산술적 우측 시프트, 부호 유지)
+c. sar al, 4  ; 정답: FDh (1111 1101b, 부호 유지 4칸 시프트)
+d. rol al, 1  ; 정답: A9h (1010 1001b, 좌측 1칸 순환)
+
+2. In the following code sequence, show the value of AL after each shift or rotate instruction has executed:
+(번역: 다음 코드 시퀀스에서 각 시프트 또는 순환 명령어가 실행된 후 AL의 값을 구하세요.)
+mov al, 0D4h
+a. ror al, 3  ; 정답: 9Ah (1001 1010b)
+b. rol al, 7  ; 정답: 6Ah (0110 1010b, 우측 1칸 순환과 동일)
+c. stc / rcl al, 1 ; 정답: A9h (CF=1 상태에서 Carry 포함 좌측 순환)
+d. stc / rcr al, 3 ; 정답: 3Ah (CF=1 상태에서 Carry 포함 우측 3칸 순환)
+
+3. What will be the contents of AX and DX after the following operation?
+(번역: 다음 연산 후 AX와 DX의 내용은 무엇입니까?)
+mov dx,0 / mov ax,222h / mov cx,100h / mul cx
+풀이: 222h * 100h = 22200h. 상위 16비트는 DX, 하위 16비트는 AX에 저장.
+정답: DX = 0002h, AX = 2200h
+
+4. What will be the contents of AX after the following operation?
+(번역: 다음 연산 후 AX의 내용은 무엇입니까?)
+mov ax,63h / mov bl,10h / div bl
+풀이: 63h(99) / 10h(16) = 몫 6, 나머지 3. 몫은 AL, 나머지는 AH.
+정답: AX = 0306h (AH=03h, AL=06h)
+
+5. What will be the contents of EAX and EDX after the following operation?
+(번역: 다음 연산 후 EAX와 EDX의 내용은 무엇입니까?)
+mov eax,123400h / mov edx,0 / mov ebx,10h / div ebx
+정답: EAX = 00012340h (몫), EDX = 00000000h (나머지)
+
+6. What will be the contents of AX and DX after the following operation?
+(번역: 다음 연산 후 AX와 DX의 내용은 무엇입니까? 4000h / 10h)
+풀이: DX:AX = 05004000h. 이를 10h로 나누면 몫이 500400h가 되어 16비트(FFFFh) 초과.
+정답: Divide Overflow(나눗셈 오버플로우) 예외 발생. 값 정의 불가.
+
+7. What will be the contents of BX after the following instructions execute?
+(번역: 다음 명령어 실행 후 BX의 내용은 무엇입니까?)
+mov bx,5 / stc / mov ax,60h / adc bx,ax
+풀이: 5 + 60h + 1(Carry) = 66h
+정답: BX = 0066h
+
+8. Describe the output when the following code executes in 64-bit mode:
+(번역: 64비트 모드에서 코드 실행 후 출력 설명. 10833300020h / 100h)
+정답: RAX = 108333000h (몫), RDX = 00000020h (나머지)
+
+9. The following program is supposed to subtract val2 from val1. Find and correct all logic errors:
+(번역: val1에서 val2를 빼는 프로그램의 논리 오류를 모두 찾고 수정하세요.)
+정답 수정 사항:
+1) mov esi, OFFSET val1 / mov edi, OFFSET val2 로 주소 참조 수정
+2) dec esi, dec edi 를 inc esi, inc edi 로 수정 (리틀 엔디안 구조이므로 주소가 증가해야 함)
+
+10. What will be the hexadecimal contents of RAX after the following instructions execute in 64-bit mode?
+(번역: 64비트 모드에서 명령어 실행 후 RAX의 16진수 내용은?)
+imul rax, multiplicand, 4
+정답: RAX = 0004080C10140000h
+
+
+7.9.2 Algorithm Workbench (알고리즘 워크벤치 1~16번)
+
+1. AX를 EAX로 부호 확장 (CWD 금지)
+shl eax, 16      
+sar eax, 16      
+
+2. 회전 명령어 없이 SHR과 조건부 점프로 AL 1비트 우측 순환
+shr al, 1        
+jnc Skip_Rotate  
+or al, 80h       
+Skip_Rotate:
+
+3. EAX를 16으로 곱하는 논리 시프트
+shl eax, 4
+
+4. EBX를 4로 나누는 논리 시프트
+shr ebx, 2
+
+5. DL의 상위/하위 반쪽 교환 단일 회전
+rol dl, 4        
+
+6. AX 최상위 비트를 DX 최하위로 밀어넣고, DX 1비트 좌측 시프트
+shld dx, ax, 1
+
+7. 메모리의 3바이트를 우측으로 1비트 시프트
+shr [byteArray + 2], 1 
+rcr [byteArray + 1], 1 
+rcr [byteArray], 1     
+
+8. 메모리의 3워드를 좌측으로 1비트 시프트
+shl [wordArray], 1     
+rcl [wordArray + 2], 1 
+rcl [wordArray + 4], 1 
+
+9. -5 * 3을 16비트 변수 val1에 저장
+mov ax, -5
+mov bx, 3
+imul bx
+mov val1, ax
+
+10. -276 / 10을 16비트 변수 val1에 저장
+mov ax, -276
+cwd              
+mov bx, 10
+idiv bx          
+mov val1, ax
+
+11. val1 = (val2 * val3) / (val4 - 3) [부호 없는 32비트]
+mov eax, val2
+mul val3         
+mov ebx, val4
+sub ebx, 3       
+div ebx          
+mov val1, eax
+
+12. val1 = (val2 / val3) * (val1 + val2) [부호 있는 32비트]
+mov eax, val2
+cdq              
+idiv val3        
+mov ebx, val1
+add ebx, val2    
+imul ebx         
+mov val1, eax
+
+13. AL의 8비트 이진수를 10진수로 출력하는 8개 줄 프로시저
+showDecimal8 PROC
+    mov ah, 0
+    mov bl, 10
+    div bl       
+    add ax, 3030h 
+    push eax
+    call WriteChar 
+    pop eax
+    mov al, ah
+    call WriteChar 
+    ret
+showDecimal8 ENDP
+
+14. AX=0072h, AF=1 일 때 AAA 명령어 출력 설명
+정답: 하위 니블(2)이 9보다 작으나 AF가 1이므로 보정 발생. 
+AL = (72h+06h) AND 0Fh = 08h, AH = 00h+01h=01h. AX는 0108h가 됨.
+
+15. x = n mod y 계산 (SUB, MOV, AND만 사용)
+mov eax, n       
+mov ebx, y       
+sub ebx, 1       
+and eax, ebx     
+
+16. EAX의 절대값 계산 (SAR, ADD, XOR만 사용)
+mov ebx, eax
+sar ebx, 31      
+add eax, ebx     
+xor eax, ebx     
+
+
+7.10 Programming Exercises (프로그래밍 연습문제 1~8번)
+
+1. Display ASCII Decimal (소수점 삽입 출력)
+WriteScaled PROC
+    pushad
+    mov esi, edx         
+    mov edi, ecx         
+    sub edi, ebx         
+L1:
+    cmp edi, 0           
+    jne PrintChar
+    mov al, '.'          
+    call WriteChar
+PrintChar:
+    mov al, [esi]
+    call WriteChar       
+    inc esi
+    dec edi              
+    loop L1              
+    popad
+    ret
+WriteScaled ENDP
+
+2. Extended Subtraction Procedure (임의 크기 정수 뺄셈)
+Extended_Sub PROC
+    pushad
+    clc                  
+L_sub:
+    mov al, [esi]
+    sbb al, [edi]        
+    mov [esi], al        
+    inc esi              
+    inc edi
+    loop L_sub
+    popad
+    ret
+Extended_Sub ENDP
+
+3. Packed Decimal Conversion (Packed BCD -> ASCII 변환)
+PackedToAsc PROC
+    pushad
+    mov ecx, 8           
+L_bcd:
+    rol eax, 4           
+    push eax
+    and al, 0Fh          
+    add al, 30h          
+    mov [edi], al        
+    inc edi
+    pop eax
+    loop L_bcd
+    popad
+    ret
+PackedToAsc ENDP
+
+4. Encryption Using Rotate Operations (순환 연산 암호화)
+EncryptRotate PROC
+    pushad
+    mov edx, 0           
+L_enc:
+    mov al, [esi]        
+    mov bl, [edi + edx]  
+    cmp bl, 0
+    jl Rotate_Left       
+    je Next_Char         
+Rotate_Right:            
+    mov bh, cl           
+    mov cl, bl
+    ror al, cl           
+    mov cl, bh
+    jmp Store_Char
+Rotate_Left:
+    mov bh, cl
+    neg bl               
+    mov cl, bl
+    rol al, cl           
+    mov cl, bh
+Store_Char:
+    mov [esi], al        
+Next_Char:
+    inc esi
+    inc edx
+    cmp edx, 10          
+    jne Skip_Reset
+    mov edx, 0
+Skip_Reset:
+    loop L_enc
+    popad
+    ret
+EncryptRotate ENDP
+
+5. Prime Numbers (에라토스테네스의 체 - 소수 구하기)
+(전제조건: .data 영역에 primes BYTE 1001 DUP(1) 선언 필요)
+SieveOfEratosthenes PROC
+    pushad
+    mov esi, 2 
+L_outer:
+    cmp esi, 31 
+    ja PrintPrimes
+    cmp BYTE PTR primes[esi], 1
+    jne NextI
+    mov eax, esi
+    imul eax, esi 
+    mov edi, eax
+L_inner:
+    cmp edi, 1000
+    ja NextI
+    mov BYTE PTR primes[edi], 0
+    add edi, esi 
+    jmp L_inner
+NextI:
+    inc esi
+    jmp L_outer
+PrintPrimes:
+    mov ecx, 1000
+    mov esi, 2
+PrintLoop:
+    cmp BYTE PTR primes[esi], 1
+    jne SkipPrint
+    mov eax, esi
+    call WriteDec
+    mov al, ' '
+    call WriteChar
+SkipPrint:
+    inc esi
+    loop PrintLoop
+    popad
+    ret
+SieveOfEratosthenes ENDP
+
+6. Greatest Common Divisor (최대공약수 구하기)
+CalcGcd PROC
+    push ebx
+    push edx
+    cmp eax, 0
+    jge Check_Y         
+    neg eax             
+Check_Y:
+    cmp ebx, 0
+    jge Do_While        
+    neg ebx             
+Do_While:
+    mov edx, 0          
+    div ebx             
+    mov eax, ebx        
+    mov ebx, edx        
+    cmp ebx, 0          
+    jg Do_While         
+    pop edx
+    pop ebx
+    ret                 
+CalcGcd ENDP
+
+7. Bitwise Multiplication (시프트/덧셈 비트 곱셈)
+BitwiseMultiply PROC
+    push edx
+    push ecx
+    push ebx
+    mov edx, eax         
+    xor eax, eax         
+    mov ecx, 32          
+L_mul:
+    shr ebx, 1           
+    jnc Skip_Add         
+    add eax, edx         
+Skip_Add:
+    shl edx, 1           
+    loop L_mul
+    pop ebx
+    pop ecx
+    pop edx
+    ret
+BitwiseMultiply ENDP
+
+8. Add Packed Integers (가변 크기 Packed 정수 덧셈)
+AddPacked PROC
+    pushad
+    clc                  
+L_addPacked:
+    mov al, [esi]
+    adc al, [edi]        
+    daa                  
+    mov [edx], al        
+    inc esi
+    inc edi
+    inc edx
+    loop L_addPacked
+    popad
+    ret
+AddPacked ENDP
