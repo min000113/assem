@@ -1,0 +1,344 @@
+8.10.1 단답형 (Short Answer)
+문제 1: 프로시저에 스택 매개변수와 지역 변수가 있을 때 프로시저의 에필로그(epilogue)에 속하는 명령문은 무엇입니까?
+답: mov esp, ebp와 pop ebp입니다. (호출 규약에 따라 ret 또는 ret n이 뒤따릅니다.)   
+문제 2: C 함수가 32비트 정수를 반환할 때 반환 값은 어디에 저장됩니까?
+답: EAX 레지스터입니다.   
+문제 3: STDCALL 호출 규약을 사용하는 프로그램은 프로시저 호출 후 스택을 어떻게 정리합니까?
+답: 호출된 프로시저가 반환될 때 RET n 명령어(n은 매개변수 바이트 수)를 사용하여 직접 스택 포인터(ESP)를 정리합니다.   
+문제 4: LEA 명령어가 OFFSET 연산자보다 강력한 이유는 무엇입니까?
+답: OFFSET은 컴파일 타임에 결정되는 상수 주소만 가져올 수 있지만, LEA는 런타임에 유효 주소를 계산하여(예: 지역 변수나 베이스-인덱스 주소 지정) 레지스터에 로드할 수 있기 때문입니다.   
+문제 5: 8.2.3절의 C++ 예제에서 int형 변수가 사용하는 스택 공간은 얼마입니까?
+답: 4바이트입니다.   
+문제 6: C 호출 규약이 STDCALL 호출 규약에 비해 가질 수 있는 장점은 무엇입니까?
+답: 호출자가 스택을 정리하기 때문에, 함수에 가변 길이의 매개변수(varargs)를 전달할 수 있습니다.   
+문제 7: (참/거짓): PROC 디렉티브를 사용할 때 모든 매개변수는 같은 줄에 나열되어야 합니다.
+답: 거짓(False). 쉼표(,)를 사용하면 다음 줄로 이어서 작성할 수 있습니다.   
+문제 8: (참/거짓): 바이트 배열의 오프셋이 포함된 변수를 워드 배열의 포인터를 예상하는 프로시저에 전달하면 어셈블러가 이를 오류로 표시합니다.
+답: 거짓(False). 어셈블러는 주소 전달 시 엄격한 타입 검사를 수행하지 않습니다.   
+문제 9: (참/거짓): 참조 매개변수를 예상하는 프로시저에 즉시값(immediate value)을 전달하면 일반 보호 오류(general-protection fault)가 발생할 수 있습니다.
+답: 참(True). 프로시저가 즉시값을 메모리 주소로 해석하여 접근하려고 하면 오류가 발생합니다.   
+8.10.2 알고리즘 워크벤치 (Algorithm Workbench)
+문제 1: 다음은 세 개의 더블워드를 더하는 AddThree 프로시저의 호출 시퀀스입니다 (STDCALL 규약 가정). 런타임 스택에 EBP가 푸시된 직후 프로시저의 스택 프레임 그림을 그리십시오.   
+push 10h
+push 20h
+push 30h
+call AddThree
+
+
+Plaintext
+[EBP]    -> 저장된 이전 EBP 값
+[EBP+4]  -> 복귀 주소 (Return address)
+[EBP+8]  -> 30h
+[EBP+12] -> 20h
+[EBP+16] -> 10h
+문제 2: 세 개의 정수 매개변수를 받아 EAX 레지스터에 그 합을 계산하여 반환하는 AddThree라는 프로시저를 생성하십시오.
+답:   
+
+AddThree PROC, val1:DWORD, val2:DWORD, val3:DWORD
+    mov eax, val1
+    add eax, val2
+    add eax, val3
+    ret
+AddThree ENDP
+문제 3: 더블워드 배열에 대한 포인터인 pArray라는 지역 변수를 선언하십시오.
+답: LOCAL pArray:PTR DWORD   
+문제 4: 20바이트 배열인 buffer라는 지역 변수를 선언하십시오.
+답: LOCAL buffer[20]:BYTE   
+문제 5: 16비트 부호 없는 정수를 가리키는 pwArray라는 지역 변수를 선언하십시오.
+답: LOCAL pwArray:PTR WORD   
+문제 6: 8비트 부호 있는 정수를 보유하는 myByte라는 지역 변수를 선언하십시오.
+답: LOCAL myByte:SBYTE   
+문제 7: 20개의 더블워드 배열인 myArray라는 지역 변수를 선언하십시오.
+답: LOCAL myArray[20]:DWORD   
+문제 8: forecolor와 backcolor라는 두 개의 스택 매개변수를 받고 Irvine32 라이브러리의 SetTextColor 프로시저를 호출하는 SetColor라는 프로시저를 생성하십시오.
+답:   
+
+SetColor PROC, forecolor:DWORD, backcolor:DWORD
+    mov eax, backcolor
+    shl eax, 4          ; 배경색을 상위 4비트로 이동
+    add eax, forecolor  ; 전경색 추가
+    call SetTextColor
+    ret
+SetColor ENDP
+문제 9: char, forecolor, backcolor 세 개의 스택 매개변수를 받는 WriteColorChar라는 프로시저를 생성하십시오. 지정된 색상 속성을 사용하여 단일 문자를 표시합니다.
+답:   
+
+WriteColorChar PROC, char:BYTE, forecolor:DWORD, backcolor:DWORD
+    INVOKE SetColor, forecolor, backcolor
+    mov al, char
+    call WriteChar
+    ret
+WriteColorChar ENDP
+문제 10: Irvine32 라이브러리의 DumpMem 프로시저를 캡슐화하는 DumpMemory라는 프로시저를 작성하십시오. 선언된 매개변수와 USES 디렉티브를 사용하십시오.
+답:   
+
+DumpMemory PROC USES esi ecx ebx,
+    address:DWORD, units:DWORD, unitType:DWORD
+    mov esi, address
+    mov ecx, units
+    mov ebx, unitType
+    call DumpMem
+    ret
+DumpMemory ENDP
+문제 11: 더블워드 배열에 대한 두 개의 포인터와 배열 요소 수를 나타내는 세 번째 매개변수를 받는 MultArray라는 프로시저를 선언하십시오. 또한 이 프로시저에 대한 PROTO 선언을 생성하십시오.
+답:   
+
+MultArray PROTO, ptr1:PTR DWORD, ptr2:PTR DWORD, count:DWORD
+
+MultArray PROC, ptr1:PTR DWORD, ptr2:PTR DWORD, count:DWORD
+    ; 프로시저 내용
+    ret
+MultArray ENDP
+8.11 프로그래밍 연습문제 (Programming Exercises) 
+문제 1: FindLargest 프로시저   문제: 부호 있는 더블워드 배열에 대한 포인터와 배열 길이를 매개변수로 받아 가장 큰 값을 EAX에 반환하는 FindLargest 프로시저를 작성하십시오. EAX를 제외한 수정된 레지스터를 보존하십시오.
+답:
+
+FindLargest PROC USES esi ecx edx, ptrArray:PTR SDWORD, arraySize:DWORD
+    mov esi, ptrArray
+    mov ecx, arraySize
+    mov eax, [esi]       ; 첫 번째 요소를 최대값으로 초기화
+    cmp ecx, 1
+    jle Done
+L1:
+    add esi, 4
+    mov edx, [esi]
+    cmp edx, eax
+    jle Next
+    mov eax, edx         ; 새 최대값 저장
+Next:
+    loop L1
+Done:
+    ret
+FindLargest ENDP
+문제 2: 체스판 (Chess Board)   
+
+DrawSquare PROC, color:DWORD
+    mov eax, color
+    call SetTextColor
+    mov al, ' '
+    call WriteChar
+    call WriteChar
+    ret
+DrawSquare ENDP
+
+DrawRow PROC, color1:DWORD, color2:DWORD
+    mov ecx, 4
+L1:
+    INVOKE DrawSquare, color1
+    INVOKE DrawSquare, color2
+    loop L1
+    call Crlf
+    ret
+DrawRow ENDP
+
+DrawBoard PROC, color1:DWORD, color2:DWORD
+    mov ecx, 4
+L1:
+    INVOKE DrawRow, color1, color2
+    INVOKE DrawRow, color2, color1
+    loop L1
+    ret
+DrawBoard ENDP
+
+; 호출 예시 (main 내부):
+; INVOKE DrawBoard, 80h, 0F0h  ; 80h(회색 배경), 0F0h(흰색 배경)
+문제 3: 색상이 번갈아 나타나는 체스판 (Chess Board with Alternating Colors)   
+DrawAlternatingBoard PROC
+    mov ecx, 16          ; 16번 반복
+    mov ebx, 0           ; 시작 색상 (00h)
+
+L1:
+    push ecx
+    mov dl, 0
+    mov dh, 0
+    call Gotoxy          ; 화면 좌측 상단으로 이동
+
+    mov eax, ebx
+    shl eax, 4           ; 배경색을 위해 상위 4비트로 이동
+    
+    INVOKE DrawBoard, eax, 0F0h  ; 현재 색상과 흰색(0F0h) 전달
+
+    mov eax, 500
+    call Delay           ; 500 밀리초 대기
+    
+    inc ebx              ; 다음 색상으로
+    pop ecx
+    loop L1
+
+    ; 원래 색상으로 복구
+    mov eax, 0Fh
+    call SetTextColor
+    call Crlf
+    ret
+DrawAlternatingBoard ENDP
+문제 4: FindThrees 프로시저   문제: 배열에 연속된 3개의 값(3)이 어딘가에 있으면 1을, 그렇지 않으면 0을 반환하는 FindThrees 프로시저를 생성하십시오.
+FindThrees PROC USES esi ecx, ptrArray:PTR DWORD, arraySize:DWORD
+    mov esi, ptrArray
+    mov ecx, arraySize
+    sub ecx, 2           ; 연속된 3개를 검사하므로 길이-2 만큼 반복
+    cmp ecx, 0
+    jle NotFound
+L1:
+    cmp DWORD PTR [esi], 3
+    jne Next
+    cmp DWORD PTR [esi+4], 3
+    jne Next
+    cmp DWORD PTR [esi+8], 3
+    jne Next
+    mov eax, 1           ; 연속된 3 찾음
+    jmp Done
+Next:
+    add esi, 4
+    loop L1
+NotFound:
+    mov eax, 0
+Done:
+    ret
+FindThrees ENDP
+문제 5: DifferentInputs 프로시저   문제: 3개의 입력 매개변수 값이 모두 다르면 EAX = 1을 반환하고, 그렇지 않으면 EAX = 0을 반환하는 DifferentInputs 프로시저를 작성하십시오.
+DifferentInputs PROC, v1:DWORD, v2:DWORD, v3:DWORD
+    mov eax, v1
+    cmp eax, v2
+    je EqualFound
+    cmp eax, v3
+    je EqualFound
+    mov eax, v2
+    cmp eax, v3
+    je EqualFound
+    mov eax, 1
+    jmp Done
+EqualFound:
+    mov eax, 0
+Done:
+    ret
+DifferentInputs ENDP
+문제 6: 정수 교환 (Exchanging Integers)   문제: 무작위 순서의 정수 배열을 생성하고 8.4.6의 Swap 프로시저를 사용하여 연속된 정수 쌍을 교환하는 루프를 작성하십시오.
+ExchangePairs PROC USES esi ecx, ptrArray:PTR DWORD, arrLen:DWORD
+    mov esi, ptrArray
+    mov ecx, arrLen
+    shr ecx, 1           ; 배열 길이를 2로 나누어 쌍의 개수 구함
+    jz Done              ; 요소가 1개 이하면 종료
+
+L1:
+    ; Swap 프로시저 대신 인라인으로 교환 (또는 call Swap)
+    mov eax, [esi]
+    xchg eax, [esi+4]
+    mov [esi], eax
+    
+    add esi, 8           ; 다음 쌍으로 이동 (4바이트 * 2)
+    loop L1
+
+Done:
+    ret
+ExchangePairs ENDP
+문제 7: 최대 공약수 (Greatest Common Divisor)   문제: 두 정수의 최대 공약수를 찾기 위한 유클리드 알고리즘의 재귀적 구현을 작성하십시오.
+CalcGcd PROC, val1:DWORD, val2:DWORD
+    mov eax, val1
+    mov ebx, val2
+    cmp ebx, 0
+    je Done
+    mov edx, 0
+    div ebx
+    INVOKE CalcGcd, ebx, edx
+Done:
+    ret
+CalcGcd ENDP
+문제 8: 일치하는 요소 계산 (Counting Matching Elements)   문제: 두 개의 배열 포인터와 배열 길이를 매개변수로 받아, 동일 인덱스의 요소 값이 같은 경우의 수를 카운트하여 EAX에 반환하는 CountMatches 프로시저를 작성하십시오
+CountMatches PROC USES esi edi ecx edx, ptr1:PTR SDWORD, ptr2:PTR SDWORD, arrLen:DWORD
+    mov esi, ptr1
+    mov edi, ptr2
+    mov ecx, arrLen
+    mov eax, 0          ; 카운터 초기화
+L1:
+    mov edx, [esi]
+    cmp edx, [edi]
+    jne Next
+    inc eax             ; 같으면 카운트 증가
+Next:
+    add esi, 4
+    add edi, 4
+    loop L1
+    ret
+CountMatches ENDP
+   문제 9: 거의 일치하는 요소 계산 (Counting Nearly Matching Elements)
+CountNearMatches PROTO, 
+    ptr1:PTR SDWORD, ptr2:PTR SDWORD, arrLen:DWORD, diff:DWORD
+
+CountNearMatches PROC USES esi edi ecx edx,
+    ptr1:PTR SDWORD, ptr2:PTR 매SDWORD, arrLen:DWORD, diff:DWORD
+
+    mov esi, ptr1
+    mov edi, ptr2
+    mov ecx, arrLen
+    xor eax, eax         ; 카운트(EAX) = 0 초기화
+    cmp ecx, 0
+    jle Done
+
+L1:
+    mov edx, [esi]
+    sub edx, [edi]       ; edx = x - y
+    
+    ; 절대값 계산
+    cmp edx, 0
+    jge IsPositive
+    neg edx              ; 음수면 양수로 변환
+IsPositive:
+
+    ; diff와 비교
+    cmp edx, diff
+    jg Next              ; 차이가 diff보다 크면 건너뜀
+    inc eax              ; 조건 만족 시 카운트 증가
+
+Next:
+    add esi, 4
+    add edi, 4
+    loop L1
+
+Done:
+    ret
+CountNearMatches ENDP
+문제 10: 프로시저 매개변수 표시 (Show Procedure Parameters)  
+ShowParams PROC USES eax ebx ecx edx, paramCount:DWORD
+    .data
+    hdrMsg BYTE "Stack parameters:", 0dh, 0ah
+           BYTE "---------------------------", 0dh, 0ah, 0
+    addrMsg BYTE "Address ", 0
+    eqMsg   BYTE " = ", 0
+    
+    .code
+    mov edx, OFFSET hdrMsg
+    call WriteString
+
+    mov ecx, paramCount
+    cmp ecx, 0
+    jle Done
+
+    ; EBP 체인을 따라가 호출자의 매개변수 위치 탐색
+    mov ebx, ebp
+    mov ebx, [ebx]       ; ebx = 호출자(MySample)의 EBP
+    add ebx, 8           ; ebx = 호출자의 첫 번째 매개변수 주소 (EBP+8)
+
+L1:
+    ; "Address " 출력
+    mov edx, OFFSET addrMsg
+    call WriteString
+
+    ; 주소 출력 (EBX 값 자체)
+    mov eax, ebx
+    call WriteHex
+
+    ; " = " 출력
+    mov edx, OFFSET eqMsg
+    call WriteString
+
+    ; 매개변수 값 출력 ([EBX] 역참조)
+    mov eax, [ebx]
+    call WriteHex
+    call Crlf
+
+    add ebx, 4           ; 다음 스택 매개변수로 이동
+    loop L1
+
+Done:
+    ret
+ShowParams ENDP
