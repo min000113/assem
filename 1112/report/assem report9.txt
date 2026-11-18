@@ -1,0 +1,1035 @@
+9.9.1 단답형 (Short Answer)
+1. 문자열 기본 명령(string primitives)을 실행할 때 인덱스 레지스터가 메모리에서 역방향으로 이동하게 만드는 방향 플래그(Direction flag) 설정은 무엇인가?
+방향 플래그가 1로 설정(Set, STD 명령어 사용)되어 있어야 한다.
+
+2. STOSW 명령어와 함께 반복 접두사(repeat prefix)가 사용될 때, 인덱스 레지스터에서 더해지거나 빼지는 값은 얼마인가?
+2 (워드 크기인 2바이트만큼 증가하거나 감소한다.)
+
+3. CMPS 명령어는 어떤 점에서 모호한가?
+CMPS 명령어 자체만으로는 비교할 피연산자의 크기(바이트, 워드, 더블워드 중 무엇인지)를 알 수 없기 때문에 모호하다. (CMPSB, CMPSW, CMPSD처럼 크기를 명시해야 한다.)
+
+4. 방향 플래그가 클리어(0)된 상태에서 SCASB가 일치하는 문자를 찾았을 때, EDI는 어디를 가리키는가?
+일치하는 문자의 바로 다음 바이트(문자)를 가리킨다.
+
+5. 배열에서 특정 문자가 처음 나타나는 위치를 검색(스캔)할 때 가장 적합한 반복 접두사는 무엇인가?
+REPNE (또는 REPNZ)
+
+6. 9.3절의 Str_trim 프로시저에서는 어떤 방향 플래그 설정을 사용하는가?
+방향 플래그가 1로 설정(Set, STD 명령어 사용)된다.
+
+7. 9.3절의 Str_trim 프로시저는 왜 JNE 명령어를 사용하는가?
+문자열의 끝에서부터 역방향으로 탐색하다가 제거할 구분자(delimiter)가 아닌 첫 번째 문자를 만났을 때 루프를 빠져나와 그 다음 위치에 널(null) 문자를 삽입하기 위해서이다.
+
+8. 9.3절의 Str_ucase 프로시저에서 대상 문자열에 숫자(digit)가 포함되어 있으면 어떻게 되는가?
+아무런 변화 없이 원래 숫자가 그대로 유지된다. ('a'와 'z' 사이의 소문자 범위인지 확인하여 범위 밖이면 건너뛰기 때문이다.)
+
+9. 만약 9.3절의 Str_length 프로시저가 SCASB를 사용한다면 어떤 반복 접두사가 가장 적절하겠는가?
+REPNE (또는 REPNZ)
+
+10. 만약 9.3절의 Str_length 프로시저가 SCASB를 사용한다면 문자열의 길이를 어떻게 계산하고 반환하겠는가?
+널(0) 문자를 찾은 후, 최종 EDI 값에서 문자열의 시작 주소를 빼고 1을 추가로 뺀 값(sub edi, pString 후 dec edi)을 EAX에 저장하여 반환한다.
+
+11. 배열에 1,024개의 요소가 포함되어 있을 때 이진 탐색(binary search) 알고리즘에 필요한 최대 비교 횟수는 몇 번인가?
+10번 ($\log_2(1024) = 10$)
+
+12. 9.5절 이진 탐색 예제의 FillArray 프로시저에서 왜 CLD 명령어로 방향 플래그를 클리어해야 하는가?
+STOSD 명령어가 실행될 때마다 EDI 레지스터가 증가하여 배열의 다음 요소(순방향)를 가리키도록 하기 위해서이다.
+
+13. 9.5절의 BinarySearch 프로시저에서 레이블 L2에 있는 명령문을 제거해도 결과에 영향을 미치지 않는 이유는 무엇인가?
+L1 루프 내부에서 이미 EDI에 배열의 시작 오프셋(pArray)이 설정되어 유지되고 있으므로 L2에서 EDI를 다시 설정하는 명령문은 중복되기 때문이다.
+
+14. 9.5절의 BinarySearch 프로시저에서 레이블 L4에 있는 명령문을 어떻게 제거할 수 있는가?
+L4의 무조건 분기(jmp L1)를 제거하고, L4로 분기하던 조건 분기 명령어들이 직접 L1으로 점프하도록 수정하면 제거할 수 있다.
+
+9.9.2 알고리즘 워크벤치 (Algorithm Workbench)
+1. 32비트 모드에서 베이스-인덱스(base-index) 피연산자의 예를 보이시오.
+[ebx + esi]
+
+2. 32비트 모드에서 베이스-인덱스-변위(base-index-displacement) 피연산자의 예를 보이시오.
+array[ebx + esi]
+
+3. 더블워드(doubleword)로 이루어진 2차원 배열이 논리적으로 3개의 행과 4개의 열을 가진다고 가정하자. ESI와 EDI를 사용하여 2번째 행의 3번째 열(행과 열의 번호는 0부터 시작)을 주소 지정하는 표현식을 작성하시오.
+array[esi + edi*4] (단, ESI = 16, EDI = 2일 때) 또는 array[esi + edi] (단, ESI = 16, EDI = 8일 때)
+
+4. sourcew와 targetw라는 이름의 두 16비트 값 배열을 비교하는 명령어들을 CMPSW를 사용하여 작성하시오.
+cld
+mov esi, OFFSET sourcew
+mov edi, OFFSET targetw
+mov ecx, LENGTHOF sourcew
+repe cmpsw
+
+5. SCASW를 사용하여 wordArray라는 배열에서 16비트 값 0100h를 검색하고, 일치하는 요소의 오프셋을 EAX 레지스터에 복사하는 명령어들을 작성하시오.
+cld
+mov edi, OFFSET wordArray
+mov ecx, LENGTHOF wordArray
+mov ax, 0100h
+repne scasw
+jnz notFound
+sub edi, 2
+mov eax, edi
+notFound:
+
+6. Str_compare 프로시저를 사용하여 두 개의 입력 문자열 중 더 큰 문자열을 판별하고 콘솔 창에 출력하는 명령어 시퀀스를 작성하시오.
+INVOKE Str_compare, ADDR string1, ADDR string2
+ja str1Larger
+mov edx, OFFSET string2
+jmp displayStr
+str1Larger:
+mov edx, OFFSET string1
+displayStr:
+call WriteString
+call Crlf
+
+7. Str_trim 프로시저를 호출하여 문자열 끝의 모든 "@" 문자를 제거하는 방법을 보이시오.
+INVOKE Str_trim, ADDR myString, '@'
+
+8. Irvine32 라이브러리의 Str_ucase 프로시저를 수정하여 모든 문자를 소문자로 변환하도록 만드는 방법을 보이시오.
+비교 범위를 'A'와 'Z' 사이로 변경하고, sub BYTE PTR [esi], 20h 대신 add BYTE PTR [esi], 20h를 수행하도록 수정한다.
+Str_lcase PROC USES eax esi,
+    pString:PTR BYTE
+
+    mov esi, pString
+L1:
+    mov al, [esi]
+    cmp al, 0
+    je L3
+    cmp al, 'A'
+    jb L2
+    cmp al, 'Z'
+    ja L2
+    add BYTE PTR [esi], 20h
+L2:
+    inc esi
+    jmp L1
+L3:
+    ret
+Str_lcase ENDP
+
+9. Str_trim 프로시저의 64비트 버전을 작성하시오.
+Str_trim64 PROC
+    push rdi
+    push rcx
+    mov rdi, rcx
+    call Str_length
+    cmp rax, 0
+    je L3
+    mov rcx, rax
+    dec rax
+    add rdi, rax
+L1:
+    mov al, [rdi]
+    cmp al, dl
+    jne L2
+    dec rdi
+    loop L1
+L2:
+    mov BYTE PTR [rdi + 1], 0
+L3:
+    pop rcx
+    pop rdi
+    ret
+Str_trim64 ENDP
+
+10. 64비트 모드에서 베이스-인덱스(base-index) 피연산자의 예를 보이시오.
+[rbx + rsi]
+
+11. EBX에 32비트 정수 2차원 배열 myArray의 행 인덱스가 들어 있고 EDI에 열 인덱스가 들어 있다고 가정할 때, 해당 배열 요소의 내용을 EAX 레지스터로 이동시키는 단일 명령문을 작성하시오.
+mov eax, myArray[ebx + edi*4]
+
+12. RBX에 64비트 정수 2차원 배열 myArray의 행 인덱스가 들어 있고 RDI에 열 인덱스가 들어 있다고 가정할 때, 해당 배열 요소의 내용을 RAX 레지스터로 이동시키는 단일 명령문을 작성하시오.
+mov rax, myArray[rbx + rdi*8]
+
+9.10 프로그래밍 연습문제 (Programming Exercises)
+1. 개선된 Str_copy 프로시저
+이 장에서 소개된 Str_copy 프로시저는 복사할 문자 수를 제한하지 않는다. 복사할 최대 문자 수를 나타내는 추가 입력 매개변수를 받는 새 버전(Str_copyN)을 작성하시오.
+INCLUDE Irvine32.inc
+
+Str_copyN PROTO,
+    pTarget:PTR BYTE,
+    pSource:PTR BYTE,
+    maxChars:DWORD
+
+.data
+source BYTE "Assembly Language Programming", 0
+target BYTE 50 DUP(0FFh)
+
+.code
+main PROC
+    INVOKE Str_copyN, ADDR target, ADDR source, 8
+    mov edx, OFFSET target
+    call WriteString
+    call Crlf
+    exit
+main ENDP
+
+Str_copyN PROC USES eax ecx esi edi,
+    pTarget:PTR BYTE,
+    pSource:PTR BYTE,
+    maxChars:DWORD
+
+    mov esi, pSource
+    mov edi, pTarget
+    mov ecx, maxChars
+    cld
+L1:
+    cmp ecx, 0
+    je L2
+    lodsb
+    cmp al, 0
+    je L2
+    stosb
+    dec ecx
+    jmp L1
+L2:
+    mov BYTE PTR [edi], 0
+    ret
+Str_copyN ENDP
+
+END main
+
+2. Str_concat 프로시저
+소스 문자열을 대상 문자열의 끝에 연결하는 Str_concat 프로시저를 작성하시오. 대상 문자열에는 새 문자들을 수용할 충분한 공간이 있어야 한다. 소스와 대상 문자열에 대한 포인터를 전달하시오.
+INCLUDE Irvine32.inc
+
+Str_concat PROTO,
+    pTarget:PTR BYTE,
+    pSource:PTR BYTE
+
+.data
+targetStr BYTE "ABCDE", 10 DUP(0)
+sourceStr BYTE "FGH", 0
+
+.code
+main PROC
+    INVOKE Str_concat, ADDR targetStr, ADDR sourceStr
+    mov edx, OFFSET targetStr
+    call WriteString
+    call Crlf
+    exit
+main ENDP
+
+Str_concat PROC USES eax esi edi,
+    pTarget:PTR BYTE,
+    pSource:PTR BYTE
+
+    mov edi, pTarget
+    INVOKE Str_length, pTarget
+    add edi, eax
+    mov esi, pSource
+    cld
+L1:
+    lodsb
+    stosb
+    cmp al, 0
+    jne L1
+    ret
+Str_concat ENDP
+
+END main
+
+3. Str_remove 프로시저
+문자열에서 n개의 문자를 제거하는 Str_remove 프로시저를 작성하시오. 문자를 제거할 문자열 내 위치에 대한 포인터와 제거할 문자 수를 지정하는 정수를 전달하시오.
+INCLUDE Irvine32.inc
+
+Str_remove PROTO,
+    pStart:PTR BYTE,
+    nChars:DWORD
+
+.data
+target BYTE "abcxxxxdefghijklmop", 0
+
+.code
+main PROC
+    INVOKE Str_remove, ADDR [target+3], 4
+    mov edx, OFFSET target
+    call WriteString
+    call Crlf
+    exit
+main ENDP
+
+Str_remove PROC USES eax ecx esi edi,
+    pStart:PTR BYTE,
+    nChars:DWORD
+
+    INVOKE Str_length, pStart
+    mov edi, pStart
+    cmp nChars, eax
+    jae L2
+    mov esi, pStart
+    add esi, nChars
+    cld
+L1:
+    lodsb
+    stosb
+    cmp al, 0
+    jne L1
+    jmp L3
+L2:
+    mov BYTE PTR [edi], 0
+L3:
+    ret
+Str_remove ENDP
+
+END main
+
+4. Str_find 프로시저
+대상 문자열 내에서 소스 문자열이 처음 일치하는 위치를 검색하여 반환하는 Str_find 프로시저를 작성하시오. 입력 매개변수는 소스 문자열에 대한 포인터와 대상 문자열에 대한 포인터여야 한다. 일치하는 항목을 찾으면 Zero 플래그가 설정되고 EAX는 대상 문자열 내 일치하는 위치를 가리키며, 그렇지 않으면 Zero 플래그가 클리어되고 EAX는 정의되지 않는다.
+INCLUDE Irvine32.inc
+
+Str_find PROTO,
+    pSource:PTR BYTE,
+    pTarget:PTR BYTE
+
+.data
+target BYTE "123ABC342432", 0
+source BYTE "ABC", 0
+pos DWORD ?
+msgFound BYTE "Found at offset: ", 0
+msgNotFound BYTE "Not found", 0
+
+.code
+main PROC
+    INVOKE Str_find, ADDR source, ADDR target
+    jnz notFound
+    mov pos, eax
+    mov edx, OFFSET msgFound
+    call WriteString
+    mov eax, pos
+    call WriteHex
+    call Crlf
+    jmp done
+notFound:
+    mov edx, OFFSET msgNotFound
+    call WriteString
+    call Crlf
+done:
+    exit
+main ENDP
+
+Str_find PROC USES ebx ecx edx esi edi,
+    pSource:PTR BYTE,
+    pTarget:PTR BYTE
+
+    INVOKE Str_length, pSource
+    mov edx, eax
+    INVOKE Str_length, pTarget
+    cmp edx, 0
+    je emptySource
+    cmp eax, edx
+    jb notMatch
+
+    sub eax, edx
+    inc eax
+    mov ecx, eax
+    mov ebx, pTarget
+    cld
+L1:
+    push ecx
+    mov esi, pSource
+    mov edi, ebx
+    mov ecx, edx
+    repe cmpsb
+    pop ecx
+    je found
+    inc ebx
+    loop L1
+
+notMatch:
+    mov eax, 1
+    test eax, eax
+    ret
+
+emptySource:
+    mov eax, pTarget
+    cmp eax, eax
+    ret
+
+found:
+    mov eax, ebx
+    cmp eax, eax
+    ret
+Str_find ENDP
+
+END main
+
+5. Str_nextWord 프로시저
+특정 구분자 문자가 처음 나타나는 위치를 스캔하고 그 구분자를 널 바이트로 대체하는 Str_nextWord 프로시저를 작성하시오. 입력 매개변수는 문자열에 대한 포인터와 구분자 문자 두 개이다. 호출 후 구분자를 찾았다면 Zero 플래그가 설정되고 EAX에는 구분자 다음 문자의 오프셋이 담긴다. 그렇지 않으면 Zero 플래그가 클리어되고 EAX는 정의되지 않는다.
+
+INCLUDE Irvine32.inc
+
+Str_nextWord PROTO,
+    pString:PTR BYTE,
+    delimiter:BYTE
+
+.data
+target BYTE "Johnson,Calvin", 0
+
+.code
+main PROC
+    INVOKE Str_nextWord, ADDR target, ','
+    jnz notFound
+    mov edx, OFFSET target
+    call WriteString
+    call Crlf
+    mov edx, eax
+    call WriteString
+    call Crlf
+notFound:
+    exit
+main ENDP
+
+Str_nextWord PROC USES esi,
+    pString:PTR BYTE,
+    delimiter:BYTE
+
+    mov esi, pString
+    mov al, delimiter
+L1:
+    cmp BYTE PTR [esi], 0
+    je notMatch
+    cmp BYTE PTR [esi], al
+    je found
+    inc esi
+    jmp L1
+found:
+    mov BYTE PTR [esi], 0
+    inc esi
+    mov eax, esi
+    cmp eax, eax
+    ret
+notMatch:
+    mov eax, 1
+    test eax, eax
+    ret
+Str_nextWord ENDP
+
+END main
+
+6. 빈도수 테이블 생성 (Get_frequencies)
+문자 빈도수 테이블을 생성하는 Get_frequencies 프로시저를 작성하시오. 프로시저의 입력은 문자열에 대한 포인터와 모두 0으로 초기화된 256개 더블워드 배열에 대한 포인터여야 하며, 각 위치는 해당 ASCII 코드로 인덱싱되어 문자가 나타난 횟수를 저장한다.
+
+INCLUDE Irvine32.inc
+
+Get_frequencies PROTO,
+    pString:PTR BYTE,
+    pTable:PTR DWORD
+
+.data
+target BYTE "AAEBDCFBBC", 0
+freqTable DWORD 256 DUP(0)
+colonStr BYTE ": ", 0
+
+.code
+main PROC
+    INVOKE Get_frequencies, ADDR target, ADDR freqTable
+    mov ecx, 256
+    mov esi, 0
+printLoop:
+    mov eax, freqTable[esi*4]
+    cmp eax, 0
+    je nextChar
+    mov eax, esi
+    call WriteChar
+    mov edx, OFFSET colonStr
+    call WriteString
+    mov eax, freqTable[esi*4]
+    call WriteDec
+    call Crlf
+nextChar:
+    inc esi
+    loop printLoop
+    exit
+main ENDP
+
+Get_frequencies PROC USES eax esi edi,
+    pString:PTR BYTE,
+    pTable:PTR DWORD
+
+    mov esi, pString
+    mov edi, pTable
+L1:
+    movzx eax, BYTE PTR [esi]
+    cmp eax, 0
+    je L2
+    inc DWORD PTR [edi + eax*4]
+    inc esi
+    jmp L1
+L2:
+    ret
+Get_frequencies ENDP
+
+END main
+
+7. 에라토스테네스의 체 (Sieve of Eratosthenes)
+65,000개 요소의 바이트 배열을 초기화되지 않은 데이터 세그먼트에 선언하고 STOSB를 사용하여 0으로 채운 뒤, 에라토스테네스의 체 알고리즘을 이용해 2와 65,000 사이의 모든 소수를 출력하시오.
+INCLUDE Irvine32.inc
+
+MAX_NUM = 65000
+
+.data?
+sieve BYTE MAX_NUM DUP(?)
+
+.data
+spaceStr BYTE " ", 0
+
+.code
+main PROC
+    cld
+    mov edi, OFFSET sieve
+    mov ecx, MAX_NUM
+    mov al, 0
+    rep stosb
+
+    mov esi, 2
+outerLoop:
+    cmp esi, MAX_NUM
+    jae printPrimes
+    cmp sieve[esi], 0
+    jne nextPrime
+
+    mov edi, esi
+    add edi, esi
+markLoop:
+    cmp edi, MAX_NUM
+    jae nextPrime
+    mov sieve[edi], 1
+    add edi, esi
+    jmp markLoop
+
+nextPrime:
+    inc esi
+    jmp outerLoop
+
+printPrimes:
+    mov esi, 2
+printLoop:
+    cmp esi, MAX_NUM
+    jae done
+    cmp sieve[esi], 0
+    jne skipPrint
+    mov eax, esi
+    call WriteDec
+    mov edx, OFFSET spaceStr
+    call WriteString
+skipPrint:
+    inc esi
+    jmp printLoop
+
+done:
+    call Crlf
+    exit
+main ENDP
+
+END main
+
+8. 버블 정렬 (Bubble Sort)
+9.5.1절의 BubbleSort 프로시저에 내부 루프에서 값 교환이 발생할 때마다 1로 설정되는 교환 플래그(exchange flag) 변수를 추가하여, 한 번의 패스 동안 교환이 전혀 발생하지 않으면 정렬을 조기 종료하도록 작성하시오.
+INCLUDE Irvine32.inc
+
+BubbleSort PROTO,
+    pArray:PTR DWORD,
+    Count:DWORD
+
+.data
+array DWORD 50, 20, 40, 10, 30
+spaceStr BYTE " ", 0
+
+.code
+main PROC
+    INVOKE BubbleSort, ADDR array, LENGTHOF array
+    mov ecx, LENGTHOF array
+    mov esi, OFFSET array
+printLoop:
+    mov eax, [esi]
+    call WriteDec
+    mov edx, OFFSET spaceStr
+    call WriteString
+    add esi, 4
+    loop printLoop
+    call Crlf
+    exit
+main ENDP
+
+BubbleSort PROC USES eax ecx esi,
+    pArray:PTR DWORD,
+    Count:DWORD
+    LOCAL exchangeFlag:DWORD
+
+    mov ecx, Count
+    dec ecx
+L1:
+    mov exchangeFlag, 0
+    push ecx
+    mov esi, pArray
+L2:
+    mov eax, [esi]
+    cmp [esi+4], eax
+    jge L3
+    xchg eax, [esi+4]
+    mov [esi], eax
+    mov exchangeFlag, 1
+L3:
+    add esi, 4
+    loop L2
+
+    pop ecx
+    cmp exchangeFlag, 0
+    je L4
+    loop L1
+L4:
+    ret
+BubbleSort ENDP
+
+END main
+
+9. 이진 탐색 (Binary Search)
+이 장에서 소개된 이진 탐색 프로시저를 mid, first, last에 대해 레지스터를 사용하도록 재작성하시오. 레지스터의 용도를 명확히 설명하는 주석을 추가하시오.
+INCLUDE Irvine32.inc
+
+BinarySearch PROTO,
+    pArray:PTR DWORD,
+    Count:DWORD,
+    searchVal:DWORD
+
+.data
+array DWORD 10, 20, 30, 40, 50, 60, 70, 80, 90, 100
+msgFound BYTE "Found at index: ", 0
+msgNotFound BYTE "Not found", 0
+
+.code
+main PROC
+    INVOKE BinarySearch, ADDR array, LENGTHOF array, 70
+    cmp eax, -1
+    je notFound
+    mov edx, OFFSET msgFound
+    call WriteString
+    call WriteDec
+    call Crlf
+    jmp done
+notFound:
+    mov edx, OFFSET msgNotFound
+    call WriteString
+    call Crlf
+done:
+    exit
+main ENDP
+
+BinarySearch PROC USES ebx ecx edx esi edi,
+    pArray:PTR DWORD,
+    Count:DWORD,
+    searchVal:DWORD
+
+    mov ebx, 0                  ; EBX = first (시작 인덱스)
+    mov edx, Count
+    dec edx                     ; EDX = last (마지막 인덱스)
+    mov edi, pArray             ; EDI = 배열의 시작 주소
+    mov ecx, searchVal          ; ECX = 찾을 값 (searchVal)
+
+L1:
+    cmp ebx, edx                ; first <= last 인지 비교
+    jg L5
+
+    mov esi, ebx
+    add esi, edx
+    shr esi, 1                  ; ESI = mid = (first + last) / 2
+
+    mov eax, [edi + esi*4]      ; EAX = array[mid]
+    cmp eax, ecx                ; array[mid]와 searchVal 비교
+    jge L2
+    mov ebx, esi
+    inc ebx                     ; first = mid + 1
+    jmp L1
+L2:
+    cmp eax, ecx
+    jle L3
+    mov edx, esi
+    dec edx                     ; last = mid - 1
+    jmp L1
+L3:
+    mov eax, esi                ; 일치하는 인덱스(mid)를 EAX에 저장
+    jmp L6
+L5:
+    mov eax, -1                 ; 찾지 못한 경우 -1 반환
+L6:
+    ret
+BinarySearch ENDP
+
+END main
+
+10. 문자 행렬 (Letter Matrix)
+무작위로 선택된 대문자로 이루어진 4x4 행렬을 생성하는 프로시저를 작성하시오. 선택된 문자가 모음일 확률은 50%여야 하며, 루프를 사용하여 프로시저를 5번 호출해 각 행렬을 콘솔 창에 출력하시오.
+INCLUDE Irvine32.inc
+
+.data
+vowels BYTE "AEIOU"
+consonants BYTE "BCDFGHJKLMNPQRSTVWXYZ"
+spaceStr BYTE " ", 0
+
+.code
+main PROC
+    call Randomize
+    mov ecx, 5
+L1:
+    call GenerateMatrix
+    call Crlf
+    loop L1
+    exit
+main ENDP
+
+GenerateMatrix PROC USES eax ebx ecx edx
+    mov ebx, 4
+rowLoop:
+    mov ecx, 4
+colLoop:
+    mov eax, 2
+    call RandomRange
+    cmp eax, 0
+    jne pickConsonant
+    mov eax, 5
+    call RandomRange
+    mov al, vowels[eax]
+    jmp printChar
+pickConsonant:
+    mov eax, 21
+    call RandomRange
+    mov al, consonants[eax]
+printChar:
+    call WriteChar
+    mov edx, OFFSET spaceStr
+    call WriteString
+    loop colLoop
+    call Crlf
+    dec ebx
+    jnz rowLoop
+    ret
+GenerateMatrix ENDP
+
+END main
+
+11. 문자 행렬 / 모음이 포함된 집합 (Letter Matrix/Sets with Vowels)
+각 문자가 모음일 확률이 50%인 단일 무작위 4x4 문자 행렬을 생성하고, 행렬의 각 행, 열, 대각선을 순회하여 정확히 두 개의 모음을 포함하는 4글자 집합만 출력하시오.
+INCLUDE Irvine32.inc
+
+CheckLine PROTO,
+    startIdx:DWORD,
+    stride:DWORD
+
+.data
+vowels BYTE "AEIOU"
+consonants BYTE "BCDFGHJKLMNPQRSTVWXYZ"
+matrix BYTE 16 DUP(?)
+tempSet BYTE 4 DUP(?), 0
+spaceStr BYTE " ", 0
+
+.code
+main PROC
+    call Randomize
+    mov ecx, 16
+    mov esi, 0
+genLoop:
+    mov eax, 2
+    call RandomRange
+    cmp eax, 0
+    jne pickConsonant
+    mov eax, 5
+    call RandomRange
+    mov al, vowels[eax]
+    jmp storeChar
+pickConsonant:
+    mov eax, 21
+    call RandomRange
+    mov al, consonants[eax]
+storeChar:
+    mov matrix[esi], al
+    inc esi
+    loop genLoop
+
+    mov ebx, 0
+    mov ecx, 4
+printRow:
+    push ecx
+    mov ecx, 4
+printCol:
+    mov al, matrix[ebx]
+    call WriteChar
+    mov edx, OFFSET spaceStr
+    call WriteString
+    inc ebx
+    loop printCol
+    call Crlf
+    pop ecx
+    loop printRow
+    call Crlf
+
+    INVOKE CheckLine, 0, 1
+    INVOKE CheckLine, 4, 1
+    INVOKE CheckLine, 8, 1
+    INVOKE CheckLine, 12, 1
+
+    INVOKE CheckLine, 0, 4
+    INVOKE CheckLine, 1, 4
+    INVOKE CheckLine, 2, 4
+    INVOKE CheckLine, 3, 4
+
+    INVOKE CheckLine, 0, 5
+    INVOKE CheckLine, 3, 3
+
+    exit
+main ENDP
+
+CheckLine PROC USES eax ebx ecx edx esi edi,
+    startIdx:DWORD,
+    stride:DWORD
+
+    mov esi, startIdx
+    mov edi, 0
+    mov edx, 0
+    mov ecx, 4
+L1:
+    mov al, matrix[esi]
+    mov tempSet[edi], al
+    cmp al, 'A'
+    je isVowel
+    cmp al, 'E'
+    je isVowel
+    cmp al, 'I'
+    je isVowel
+    cmp al, 'O'
+    je isVowel
+    cmp al, 'U'
+    je isVowel
+    jmp nextElem
+isVowel:
+    inc edx
+nextElem:
+    add esi, stride
+    inc edi
+    loop L1
+
+    cmp edx, 2
+    jne done
+    mov edx, OFFSET tempSet
+    call WriteString
+    call Crlf
+done:
+    ret
+CheckLine ENDP
+
+END main
+
+12. 배열 행의 합계 계산 (calc_row_sum)
+바이트, 워드, 또는 더블워드로 이루어진 2차원 배열에서 단일 행의 합계를 계산하는 calc_row_sum 프로시저를 작성하시오. 스택 매개변수는 배열 오프셋, 행 크기, 배열 타입, 행 인덱스이며, INVOKE나 확장 PROC를 사용하지 말고 명시적 스택 매개변수를 사용하여 EAX에 합계를 반환하시오.
+INCLUDE Irvine32.inc
+
+.data
+byteArray BYTE 1, 2, 3, 4
+          BYTE 5, 6, 7, 8
+          BYTE 9, 10, 11, 12
+
+wordArray WORD 10, 20, 30, 40
+          WORD 50, 60, 70, 80
+          WORD 90, 100, 110, 120
+
+dwordArray DWORD 100, 200, 300, 400
+           DWORD 500, 600, 700, 800
+           DWORD 900, 1000, 1100, 1200
+
+promptStr BYTE "Enter row index (0-2): ", 0
+byteMsg BYTE "Byte array row sum: ", 0
+wordMsg BYTE "Word array row sum: ", 0
+dwordMsg BYTE "Doubleword array row sum: ", 0
+rowIdx DWORD ?
+
+.code
+main PROC
+    mov edx, OFFSET promptStr
+    call WriteString
+    call ReadDec
+    mov rowIdx, eax
+
+    push rowIdx
+    push TYPE byteArray
+    push 4
+    push OFFSET byteArray
+    call calc_row_sum
+    mov edx, OFFSET byteMsg
+    call WriteString
+    call WriteDec
+    call Crlf
+
+    push rowIdx
+    push TYPE wordArray
+    push 4
+    push OFFSET wordArray
+    call calc_row_sum
+    mov edx, OFFSET wordMsg
+    call WriteString
+    call WriteDec
+    call Crlf
+
+    push rowIdx
+    push TYPE dwordArray
+    push 4
+    push OFFSET dwordArray
+    call calc_row_sum
+    mov edx, OFFSET dwordMsg
+    call WriteString
+    call WriteDec
+    call Crlf
+
+    exit
+main ENDP
+
+calc_row_sum PROC
+    push ebp
+    mov ebp, esp
+    push ebx
+    push ecx
+    push edx
+    push esi
+    push edi
+
+    mov ebx, [ebp + 8]
+    mov ecx, [ebp + 12]
+    mov edx, [ebp + 16]
+    mov eax, [ebp + 20]
+
+    mul ecx
+    mul edx
+    add ebx, eax
+
+    mov edi, 0
+    mov esi, 0
+L1:
+    cmp edx, 1
+    jne checkWord
+    movzx eax, BYTE PTR [ebx + esi]
+    jmp addVal
+checkWord:
+    cmp edx, 2
+    jne checkDword
+    movzx eax, WORD PTR [ebx + esi*2]
+    jmp addVal
+checkDword:
+    mov eax, DWORD PTR [ebx + esi*4]
+addVal:
+    add edi, eax
+    inc esi
+    loop L1
+
+    mov eax, edi
+
+    pop edi
+    pop esi
+    pop edx
+    pop ecx
+    pop ebx
+    pop ebp
+    ret 16
+calc_row_sum ENDP
+
+END main
+
+13. 선행 문자 제거 (Trimming Leading Characters)
+문자열의 앞부분에서 특정 문자의 모든 인스턴스를 제거하는 Str_trim 프로시저의 변형을 작성하시오.
+INCLUDE Irvine32.inc
+
+Str_trimLeading PROTO,
+    pString:PTR BYTE,
+    trimChar:BYTE
+
+.data
+target BYTE "###ABC", 0
+
+.code
+main PROC
+    INVOKE Str_trimLeading, ADDR target, '#'
+    mov edx, OFFSET target
+    call WriteString
+    call Crlf
+    exit
+main ENDP
+
+Str_trimLeading PROC USES eax esi edi,
+    pString:PTR BYTE,
+    trimChar:BYTE
+
+    mov esi, pString
+    mov al, trimChar
+L1:
+    cmp BYTE PTR [esi], 0
+    je L2
+    cmp BYTE PTR [esi], al
+    jne L2
+    inc esi
+    jmp L1
+L2:
+    mov edi, pString
+    cld
+L3:
+    lodsb
+    stosb
+    cmp al, 0
+    jne L3
+    ret
+Str_trimLeading ENDP
+
+END main
+
+14. 문자 집합 제거 (Trimming a Set of Characters)
+문자열의 끝에서 특정 문자 집합에 속하는 모든 문자의 인스턴스를 제거하는 Str_trim 프로시저의 변형을 작성하시오.
+INCLUDE Irvine32.inc
+
+Str_trimSet PROTO,
+    pString:PTR BYTE,
+    pFilter:PTR BYTE
+
+.data
+target BYTE "ABC#$&", 0
+filter BYTE "%#!;$&*", 0
+
+.code
+main PROC
+    INVOKE Str_trimSet, ADDR target, ADDR filter
+    mov edx, OFFSET target
+    call WriteString
+    call Crlf
+    exit
+main ENDP
+
+Str_trimSet PROC USES eax ebx esi edi,
+    pString:PTR BYTE,
+    pFilter:PTR BYTE
+
+    INVOKE Str_length, pString
+    cmp eax, 0
+    je done
+    mov edi, pString
+    mov ebx, edi
+    add edi, eax
+    dec edi
+
+outerLoop:
+    cmp edi, ebx
+    jb terminateStr
+    mov al, [edi]
+    mov esi, pFilter
+innerLoop:
+    mov ah, [esi]
+    cmp ah, 0
+    je terminateStr
+    cmp al, ah
+    je matchFound
+    inc esi
+    jmp innerLoop
+matchFound:
+    dec edi
+    jmp outerLoop
+
+terminateStr:
+    mov BYTE PTR [edi + 1], 0
+done:
+    ret
+Str_trimSet ENDP
+
+END main
