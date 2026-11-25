@@ -1,0 +1,782 @@
+10.7.1 Short Answer (단답형 문제)
+1. What is the purpose of the STRUCT directive?번역: STRUCT 지시어의 목적은 무엇인가?
+정답: 서로 다른 데이터 타입을 가질 수 있는 관련 필드(멤버)들을 하나의 사용자 정의 복합 데이터 타입(구조체)으로 묶어 정의하기 위해 사용됩니다.
+2. Assume that the following structure has been defined: State whether or not each of the following declarations is valid.
+번역: 다음과 같은 구조체가 정의되어 있다고 가정할 때, 아래 각 선언문이 유효한지(valid) 아닌지(invalid) 판별하시오.
+AssemblyRentalInvoice STRUCT
+    invoiceNum BYTE 5 DUP(' ')
+    dailyPrice WORD ?
+    daysRented WORD ?
+RentalInvoice ENDS
+정답:
+a. rentals RentalInvoice <> : Valid (유효함) — 변수명, 구조체 타입, 기본 초기값(<>) 순서로 올바르게 선언되었습니다.
+b. RentalInvoice rentals <> : Invalid (유효하지 않음) — 변수명과 구조체 타입의 위치가 서로 바뀌었습니다.
+c. march RentalInvoice <'12345',10,0> : Valid (유효함) — 5바이트 문자열과 두 개의 WORD 필드에 유효한 초기값이 순서대로 지정되었습니다.
+d. RentalInvoice <,10,0> : Valid (유효함) — MASM에서는 변수 이름이 없는 익명 구조체 변수 선언을 허용합니다.
+e. current RentalInvoice <,15,0,0> : Invalid (유효하지 않음) — 구조체 필드는 3개인데 초기값을 4개 지정했습니다.
+3. (True/False): A macro cannot contain data definitions.
+번역: (참/거짓) 매크로는 데이터 정의를 포함할 수 없다.
+정답: False (거짓) — 매크로 내부에 .data 지시어와 함께 변수 및 데이터 정의를 포함할 수 있습니다(중복 선언 방지를 위해 LOCAL 지시어와 함께 사용).
+4. What is the purpose of the LOCAL directive?
+번역: LOCAL 지시어의 목적은 무엇인가?
+정답: 매크로가 호출되어 확장될 때마다 어셈블러가 고유한 레이블이나 변수 이름을 자동으로 생성하도록 하여, 여러 번 호출 시 발생하는 심볼 중복 정의 오류를 방지합니다.
+5. Which directive displays a message on the console during the assembly step?
+번역: 어셈블(assembly) 단계에서 콘솔 화면에 메시지를 출력하는 지시어는 무엇인가?
+정답: ECHO (또는 %OUT)
+6. Which directive marks the end of a conditional block of statements?
+번역: 조건부 명령문 블록(conditional block)의 끝을 표시하는 지시어는 무엇인가?
+정답: ENDIF7. List all the relational operators that can be used in constant boolean expressions.
+번역: 상수 불리언 표현식(constant boolean expressions)에서 사용할 수 있는 모든 관계 연산자를 나열하시오.
+정답: LT (<), GT (>), EQ (==), NE (!=), LE (<=), GE (>=)
+8. What is the purpose of the & operator in a macro definition?
+번역: 매크로 정의에서 & 연산자의 목적은 무엇인가?
+정답: 치환(substitution) 연산자로, 매크로 매개변수 이름이 리터럴 문자열이나 다른 식별자 내부에 포함되어 있을 때 실제 인자 값으로 치환되도록 합니다.
+9. What is the purpose of the ! operator in a macro definition?
+번역: 매크로 정의에서 ! 연산자의 목적은 무엇인가?정답: 리터럴 문자(literal-character) 연산자로, <, >, ;, &, % 등 매크로에서 특수 기능을 갖는 기호를 일반 문자로 취급하도록 만듭니다.
+10. What is the purpose of the % operator in a macro definition?
+번역: 매크로 정의에서 % 연산자의 목적은 무엇인가?
+정답: 확장(expansion) 연산자로, 상수 수식이나 텍스트 매크로를 즉시 평가하여 그 계산 결과를 텍스트로 변환한 뒤 매크로 인자로 전달합니다. 
+
+10.7.2 Algorithm Workbench (알고리즘 워크벤치)1. 16비트 WORD인 field1과 20개의 32비트 DWORD 배열인 field2를 포함하는 SampleStruct 구조체를 정의하시오. (초기값은 미정의 상태로 둠)
+AssemblySampleStruct STRUCT
+    field1 WORD ?
+    field2 DWORD 20 DUP(?)
+SampleStruct ENDS
+2. SYSTEMTIME 구조체의 wHour 필드를 가져오는 명령문을 작성하시오.Assembly; sysTime이 SYSTEMTIME 구조체 변수인 경우:
+mov ax, sysTime.wHour
+
+; ESI가 SYSTEMTIME 구조체를 가리키는 포인터인 경우:
+; mov ax, (SYSTEMTIME PTR [esi]).wHour
+3. Triangle 구조체를 사용하여 꼭짓점이 (0,0), (5,0), (7,6)으로 초기화된 구조체 변수를 선언하시오.AssemblymyTriangle Triangle < <0, 0>, <5, 0>, <7, 6> >
+4. Triangle 구조체 배열을 선언하고, 루프를 사용하여 각 삼각형의 Vertex1을 (0...10, 0...10) 범위의 임의의 좌표로 초기화하시오.AssemblyNUM_TRIANGLES = 10
+
+.data
+triangles Triangle NUM_TRIANGLES DUP(<>)
+
+.code
+    call Randomize
+    mov esi, OFFSET triangles
+    mov ecx, NUM_TRIANGLES
+InitLoop:
+    mov eax, 11
+    call RandomRange        ; 0 ~ 10 난수 생성
+    mov (Triangle PTR [esi]).Vertex1.X, ax
+
+    mov eax, 11
+    call RandomRange        ; 0 ~ 10 난수 생성
+    mov (Triangle PTR [esi]).Vertex1.Y, ax
+
+    add esi, TYPE Triangle
+    loop InitLoop
+5. 첫 번째 매개변수로 지정된 문자를 두 번째 매개변수 횟수만큼 반복 출력하는 mPrintChar 매크로를 작성하시오.AssemblymPrintChar MACRO char, count
+    LOCAL PrintLoop
+    push eax
+    push ecx
+    mov al, char
+    mov ecx, count
+PrintLoop:
+    call WriteChar
+    loop PrintLoop
+    pop ecx
+    pop eax
+ENDM
+6. 0부터 $n - 1$ 사이의 난수를 생성하는 mGenRandom 매크로를 작성하시오. ($n$을 유일한 매개변수로 사용)AssemblymGenRandom MACRO n
+    mov eax, n
+    call RandomRange
+ENDM
+7. 프롬프트 문자열 리터럴을 출력하고 사용자로부터 정수를 입력받아 더블워드 변수에 저장하는 mPromptInteger 매크로를 작성하시오.AssemblymPromptInteger MACRO promptStr, intVar
+    LOCAL strLabel
+    .data
+    strLabel BYTE promptStr, 0
+    .code
+    push eax
+    push edx
+    mov edx, OFFSET strLabel
+    call WriteString
+    call ReadInt
+    mov intVar, eax
+    pop edx
+    pop eax
+ENDM
+8. 커서 위치를 이동시키고 콘솔 창에 문자열 리터럴을 출력하는 mWriteAt 매크로를 작성하시오. (책의 mGotoxy와 mWrite 매크로 활용)AssemblymWriteAt MACRO xPos, yPos, literalStr
+    mGotoxy xPos, yPos
+    mWrite literalStr
+ENDM
+9. 10.2.5절의 mWriteStr namePrompt 매크로 호출 시 확장(생성)되는 코드를 쓰시오.Assemblypush edx
+mov edx, OFFSET namePrompt
+call WriteString
+pop edx
+10. 10.2.5절의 mReadStr customerName 매크로 호출 시 확장(생성)되는 코드를 쓰시오.Assemblypush ecx
+push edx
+mov edx, OFFSET customerName
+mov ecx, SIZEOF customerName
+call ReadString
+pop edx
+pop ecx
+11. 변수 이름 하나를 매개변수로 받아 책 라이브러리의 mDumpMem 매크로를 호출하는 mDumpMemx 매크로를 작성하고 호출 예제를 보이시오.AssemblymDumpMemx MACRO varName
+    mDumpMem OFFSET varName, LENGTHOF varName, TYPE varName
+ENDM
+
+; 호출 예제:
+; .data
+; array DWORD 10, 20, 30, 40
+; .code
+; mDumpMemx array
+12. 매크로 매개변수에 기본 인자 초기값(default argument initializer)을 지정한 예제를 작성하시오.AssemblymDisplayMsg MACRO msgText:=<"Default Message">
+    LOCAL textLabel
+    .data
+    textLabel BYTE msgText, 0
+    .code
+    push edx
+    mov edx, OFFSET textLabel
+    call WriteString
+    call Crlf
+    pop edx
+ENDM
+13. IF, ELSE, ENDIF 지시어를 사용하는 짧은 예제를 작성하시오.AssemblymCheckMode MACRO modeVal
+    IF modeVal EQ 1
+        mov eax, 100
+    ELSE
+        mov eax, 200
+    ENDIF
+ENDM
+14. 상수 매크로 매개변수 Z의 값을 검사하여 0보다 작으면 어셈블 단계에서 Z가 유효하지 않다는 메시지를 출력하는 IF 문을 작성하시오.AssemblyIF Z LT 0
+    ECHO Error: Parameter Z is invalid (must be >= 0).
+ENDIF
+15. 매크로 매개변수가 리터럴 문자열 내부에 포함될 때 & 연산자를 사용하는 짧은 매크로를 작성하시오.AssemblymShowVariable MACRO varName
+    LOCAL msgStr
+    .data
+    msgStr BYTE "Value of &varName = ", 0
+    .code
+    push eax
+    push edx
+    mov edx, OFFSET msgStr
+    call WriteString
+    mov eax, varName
+    call WriteDec
+    call Crlf
+    pop edx
+    pop eax
+ENDM
+16. 주어진 mLocate 매크로 정의에서 아래 세 가지 호출문이 전처리기에 의해 확장될 때 생성되는 소스 코드를 각각 쓰시오.mLocate -2,20 확장 결과:
+(xval이 -2이므로 IF xval LT 0 조건이 참이 되어 EXITM이 실행됩니다. 따라서 아무 코드도 생성되지 않습니다.)mLocate 10,20 확장 결과:Assemblymov bx,0
+mov ah,2
+mov dh,20
+mov dl,10
+int 10h
+mLocate col,row 확장 결과:Assemblymov bx,0
+mov ah,2
+mov dh,row
+mov dl,col
+int 10h
+   10.8 Programming Exercises (프로그래밍 실습 문제)1. mReadkey Macro번역: 키 입력을 기다렸다가 눌린 키의 ASCII 코드와 키보드 스캔 코드를 매개변수로 반환하는 매크로를 작성하시오. 힌트: 링크 라이브러리의 ReadChar를 호출하시오. 이 매크로를 테스트하는 프로그램을 작성하시오.AssemblyINCLUDE Irvine32.inc
+
+mReadkey MACRO asciiCode, scanCode
+    push eax
+    call ReadChar           ; AL = ASCII 코드, AH = 스캔 코드
+    mov asciiCode, al
+    mov scanCode, ah
+    pop eax
+ENDM
+
+.data
+ascii BYTE ?
+scan  BYTE ?
+prompt  BYTE "Press any key...", 0Dh, 0Ah, 0
+msgAsc  BYTE "ASCII code (hex): ", 0
+msgScan BYTE "Scan code (hex) : ", 0
+
+.code
+main PROC
+    mov edx, OFFSET prompt
+    call WriteString
+
+    mReadkey ascii, scan
+
+    mov edx, OFFSET msgAsc
+    call WriteString
+    movzx eax, ascii
+    call WriteHex
+    call Crlf
+
+    mov edx, OFFSET msgScan
+    call WriteString
+    movzx eax, scan
+    call WriteHex
+    call Crlf
+
+    exit
+main ENDP
+END main
+2. mWritestringAttr Macro번역: 지정된 텍스트 색상으로 널 종료 문자열을 콘솔에 출력하는 매크로를 작성하시오. 매개변수로 문자열 이름과 색상을 받아야 합니다. 힌트: 링크 라이브러리의 SetTextColor를 호출하시오. 여러 문자열을 다른 색상으로 출력하며 테스트하는 프로그램을 작성하시오.AssemblyINCLUDE Irvine32.inc
+
+mWritestringAttr MACRO strName, textColor
+    push eax
+    push edx
+    mov eax, textColor
+    call SetTextColor
+    mov edx, OFFSET strName
+    call WriteString
+    pop edx
+    pop eax
+ENDM
+
+.data
+str1 BYTE "First string in yellow.", 0Dh, 0Ah, 0
+str2 BYTE "Second string in light green.", 0Dh, 0Ah, 0
+str3 BYTE "Third string in light cyan.", 0Dh, 0Ah, 0
+
+.code
+main PROC
+    mWritestringAttr str1, yellow
+    mWritestringAttr str2, lightGreen
+    mWritestringAttr str3, lightCyan
+
+    ; 기본 색상으로 복원
+    mov eax, lightGray
+    call SetTextColor
+    exit
+main ENDP
+END main
+3. mMove32 Macro번역: 두 개의 32비트 메모리 피연산자를 받아 원본(source) 피연산자의 값을 대상(destination) 피연산자로 복사하는 mMove32 매크로를 작성하고, 이를 테스트하는 프로그램을 작성하시오.AssemblyINCLUDE Irvine32.inc
+
+mMove32 MACRO destination, source
+    push eax
+    mov eax, source
+    mov destination, eax
+    pop eax
+ENDM
+
+.data
+val1 DWORD 12345678h
+val2 DWORD 0
+
+.code
+main PROC
+    mMove32 val2, val1
+
+    mov eax, val2
+    call WriteHex
+    call Crlf
+    exit
+main ENDP
+END main
+4. mMult32 Macro번역: 두 개의 32비트 메모리 피연산자를 곱하여 32비트 곱셈 결과를 생성하는 mMult32 매크로를 작성하고, 이를 테스트하는 프로그램을 작성하시오.AssemblyINCLUDE Irvine32.inc
+
+; op1 = op1 * op2 (32비트 결과 저장)
+mMult32 MACRO op1, op2
+    push eax
+    push edx
+    mov eax, op1
+    mul op2
+    mov op1, eax
+    pop edx
+    pop eax
+ENDM
+
+.data
+num1 DWORD 250
+num2 DWORD 40
+
+.code
+main PROC
+    mMult32 num1, num2
+
+    mov eax, num1
+    call WriteDec           ; 출력: 10000
+    call Crlf
+    exit
+main ENDP
+END main
+5. mReadInt Macro번역: 표준 입력에서 16비트 또는 32비트 부호 있는 정수를 읽어 인자로 전달된 변수에 저장하는 mReadInt 매크로를 작성하시오. 조건부 연산자를 사용하여 결과 변수의 크기에 맞게 동작하도록 만들고, 다양한 크기의 피연산자로 테스트하는 프로그램을 작성하시오.AssemblyINCLUDE Irvine32.inc
+
+mReadInt MACRO intVar
+    push eax
+    call ReadInt
+    IF TYPE intVar EQ 2
+        mov intVar, ax
+    ELSEIF TYPE intVar EQ 4
+        mov intVar, eax
+    ELSE
+        ECHO Error: mReadInt requires a 16-bit or 32-bit operand.
+    ENDIF
+    pop eax
+ENDM
+
+.data
+val16 SWORD ?
+val32 SDWORD ?
+p16 BYTE "Enter a 16-bit signed integer: ", 0
+p32 BYTE "Enter a 32-bit signed integer: ", 0
+outMsg BYTE "Stored value: ", 0
+
+.code
+main PROC
+    mov edx, OFFSET p16
+    call WriteString
+    mReadInt val16
+
+    mov edx, OFFSET outMsg
+    call WriteString
+    movsx eax, val16
+    call WriteInt
+    call Crlf
+
+    mov edx, OFFSET p32
+    call WriteString
+    mReadInt val32
+
+    mov edx, OFFSET outMsg
+    call WriteString
+    mov eax, val32
+    call WriteInt
+    call Crlf
+
+    exit
+main ENDP
+END main
+6. mWriteInt Macro번역: WriteInt 라이브러리 프로시저를 호출하여 부호 있는 정수를 표준 출력에 출력하는 mWriteInt 매크로를 작성하시오. 인자는 바이트(1바이트), 워드(2바이트), 더블워드(4바이트)가 될 수 있으며, 조건부 연산자를 사용해 인자 크기에 적응하도록 만들고 테스트 프로그램을 작성하시오.AssemblyINCLUDE Irvine32.inc
+
+mWriteInt MACRO intVal
+    push eax
+    IF TYPE intVal EQ 1
+        movsx eax, intVal
+    ELSEIF TYPE intVal EQ 2
+        movsx eax, intVal
+    ELSEIF TYPE intVal EQ 4
+        mov eax, intVal
+    ELSE
+        ECHO Error: mWriteInt requires a 1-, 2-, or 4-byte operand.
+        pop eax
+        EXITM
+    ENDIF
+    call WriteInt
+    pop eax
+ENDM
+
+.data
+bVal SBYTE -42
+wVal SWORD -1234
+dVal SDWORD 987654
+
+.code
+main PROC
+    mWriteInt bVal
+    call Crlf
+    mWriteInt wVal
+    call Crlf
+    mWriteInt dVal
+    call Crlf
+    exit
+main ENDP
+END main
+7. The Professor's Lost Phone번역: 10.1.6절의 교수의 취객의 걸음(Drunkard's Walk) 시뮬레이션에서, 프로그램이 실행될 때마다 무작위 시간 간격(걸음)에 교수가 서 있는 위치에 휴대폰을 떨어뜨리도록 프로그램을 작성하시오. 실행할 때마다 다른 시점(및 위치)에서 휴대폰을 잃어버려야 합니다.AssemblyINCLUDE Irvine32.inc
+
+WalkMax = 50
+StartX = 25
+StartY = 25
+
+DrunkardWalk STRUCT
+    path COORD WalkMax DUP(<0, 0>)
+    pathsUsed WORD 0
+DrunkardWalk ENDS
+
+.data
+aWalk DrunkardWalk <>
+dropStep DWORD ?
+msgStep BYTE "Phone dropped at step #", 0
+msgLoc  BYTE " at coordinates: ", 0
+comma   BYTE ", ", 0
+
+.code
+main PROC
+    call Randomize
+
+    ; 0 ~ WalkMax-1 중 휴대폰을 떨어뜨릴 무작위 걸음 선택
+    mov eax, WalkMax
+    call RandomRange
+    mov dropStep, eax
+
+    mov esi, OFFSET aWalk
+    call TakeDrunkenWalk
+
+    ; 휴대폰 분실 위치 출력
+    mov edx, OFFSET msgStep
+    call WriteString
+    mov eax, dropStep
+    call WriteDec
+
+    mov edx, OFFSET msgLoc
+    call WriteString
+    mov esi, dropStep
+    shl esi, 2                      ; COORD 크기(4바이트) 곱하기
+    movzx eax, aWalk.path[esi].X
+    call WriteDec
+    mov edx, OFFSET comma
+    call WriteString
+    movzx eax, aWalk.path[esi].Y
+    call WriteDec
+    call Crlf
+
+    exit
+main ENDP
+
+TakeDrunkenWalk PROC
+    pushad
+    mov edi, esi
+    add edi, OFFSET DrunkardWalk.path
+    mov ecx, WalkMax
+    mov currX, StartX
+    mov currY, StartY
+
+Again:
+    mov ax, currX
+    mov (COORD PTR [edi]).X, ax
+    mov ax, currY
+    mov (COORD PTR [edi]).Y, ax
+
+    mov eax, 4
+    call RandomRange
+    cmp eax, 0
+    je GoNorth
+    cmp eax, 1
+    je GoSouth
+    cmp eax, 2
+    je GoWest
+    inc currX
+    jmp NextStep
+
+GoNorth:
+    dec currY
+    jmp NextStep
+GoSouth:
+    inc currY
+    jmp NextStep
+GoWest:
+    dec currX
+
+NextStep:
+    add edi, TYPE COORD
+    loop Again
+
+    mov (DrunkardWalk PTR [esi]).pathsUsed, WalkMax
+    popad
+    ret
+.data
+currX WORD ?
+currY WORD ?
+.code
+TakeDrunkenWalk ENDP
+END main
+8. Drunkard's Walk with Probabilities번역: DrunkardWalk 프로그램을 수정하여 이전 걸음과 같은 방향으로 계속 걸을 확률 50%, 반대 방향으로 돌아설 확률 10%, 오른쪽 또는 왼쪽으로 회전할 확률 각각 20%가 되도록 만드시오. 루프 시작 전에 기본 시작 방향을 지정하시오.AssemblyINCLUDE Irvine32.inc
+
+WalkMax = 50
+StartX = 25
+StartY = 25
+
+; 방향 상수: 0=북(North), 1=동(East), 2=남(South), 3=서(West)
+DIR_NORTH = 0
+DIR_EAST  = 1
+DIR_SOUTH = 2
+DIR_WEST  = 3
+
+DrunkardWalk STRUCT
+    path COORD WalkMax DUP(<0, 0>)
+    pathsUsed WORD 0
+DrunkardWalk ENDS
+
+.data
+aWalk DrunkardWalk <>
+msgStep BYTE "Step ", 0
+msgAt   BYTE ": (", 0
+msgMid  BYTE ", ", 0
+msgEnd  BYTE ")", 0
+
+.code
+main PROC
+    call Randomize
+    mov esi, OFFSET aWalk
+    call TakeDrunkenWalkProb
+    call DisplayWalk
+    exit
+main ENDP
+
+TakeDrunkenWalkProb PROC
+    pushad
+    mov edi, esi
+    add edi, OFFSET DrunkardWalk.path
+    mov ecx, WalkMax
+    mov currX, StartX
+    mov currY, StartY
+    mov ebx, DIR_NORTH              ; 기본 시작 방향 = 북쪽(0)
+
+Again:
+    mov ax, currX
+    mov (COORD PTR [edi]).X, ax
+    mov ax, currY
+    mov (COORD PTR [edi]).Y, ax
+
+    ; 0 ~ 99 난수 생성
+    mov eax, 100
+    call RandomRange
+
+    cmp eax, 50                     ; 0..49 (50%): 같은 방향 유지
+    jb MoveInDir
+    cmp eax, 60                     ; 50..59 (10%): 반대 방향 (dir + 2) mod 4
+    jb TurnReverse
+    cmp eax, 80                     ; 60..79 (20%): 우회전 (dir + 1) mod 4
+    jb TurnRight
+
+    ; 80..99 (20%): 좌회전 (dir + 3) mod 4
+    add ebx, 3
+    and ebx, 3
+    jmp MoveInDir
+
+TurnReverse:
+    add ebx, 2
+    and ebx, 3
+    jmp MoveInDir
+
+TurnRight:
+    inc ebx
+    and ebx, 3
+
+MoveInDir:
+    cmp ebx, DIR_NORTH
+    je GoNorth
+    cmp ebx, DIR_EAST
+    je GoEast
+    cmp ebx, DIR_SOUTH
+    je GoSouth
+    dec currX                       ; DIR_WEST
+    jmp NextStep
+
+GoNorth:
+    dec currY
+    jmp NextStep
+GoEast:
+    inc currX
+    jmp NextStep
+GoSouth:
+    inc currY
+
+NextStep:
+    add edi, TYPE COORD
+    loop Again
+
+    mov (DrunkardWalk PTR [esi]).pathsUsed, WalkMax
+    popad
+    ret
+.data
+currX WORD ?
+currY WORD ?
+.code
+TakeDrunkenWalkProb ENDP
+
+DisplayWalk PROC
+    mov esi, OFFSET aWalk.path
+    mov ecx, WalkMax
+    mov ebx, 1
+DispLoop:
+    mov edx, OFFSET msgStep
+    call WriteString
+    mov eax, ebx
+    call WriteDec
+    mov edx, OFFSET msgAt
+    call WriteString
+    movzx eax, (COORD PTR [esi]).X
+    call WriteDec
+    mov edx, OFFSET msgMid
+    call WriteString
+    movzx eax, (COORD PTR [esi]).Y
+    call WriteDec
+    mov edx, OFFSET msgEnd
+    call WriteString
+    call Crlf
+    add esi, TYPE COORD
+    inc ebx
+    loop DispLoop
+    ret
+DisplayWalk ENDP
+END main
+9. Shifting Multiple Doublewords번역: SHRD 및 SHLD 명령어를 사용하여 32비트 정수 배열을 지정된 방향(R 또는 L)으로 원하는 비트 수만큼 시프트하는 매크로를 작성하시오. 리틀 엔디안 순서를 가정하며, 같은 배열을 양방향으로 시프트하고 결과를 출력하는 테스트 프로그램을 작성하시오.AssemblyINCLUDE Irvine32.inc
+
+mShiftDoublewords MACRO arrayName, direction, numberOfBits
+    LOCAL ShiftLoop
+    push eax
+    push ecx
+    push esi
+
+    mov cl, numberOfBits
+    mov ebx, (LENGTHOF arrayName) - 1
+
+    IFIDNI <&direction>, <R>
+        mov esi, OFFSET arrayName
+        mov ecx, (LENGTHOF arrayName) - 1
+        push ecx
+        mov cl, numberOfBits
+    ShiftLoop:
+        mov eax, [esi + 4]
+        shrd [esi], eax, cl
+        add esi, 4
+        dec DWORD PTR [esp]
+        jnz ShiftLoop
+        pop eax
+        shr DWORD PTR [esi], cl
+
+    ELSEIFIDNI <&direction>, <L>
+        mov esi, OFFSET arrayName + ((LENGTHOF arrayName) - 1) * 4
+        mov ecx, (LENGTHOF arrayName) - 1
+        push ecx
+        mov cl, numberOfBits
+    ShiftLoop:
+        mov eax, [esi - 4]
+        shld [esi], eax, cl
+        sub esi, 4
+        dec DWORD PTR [esp]
+        jnz ShiftLoop
+        pop eax
+        shl DWORD PTR [esi], cl
+
+    ELSE
+        ECHO Error: direction must be R or L.
+    ENDIF
+
+    pop esi
+    pop ecx
+    pop eax
+ENDM
+
+.data
+arr DWORD 12345678h, 9ABCDEF0h, 0FEDCBA98h
+msgOrig  BYTE "Original array     : ", 0
+msgRight BYTE "After Right Shift 4: ", 0
+msgLeft  BYTE "After Left Shift 4 : ", 0
+
+.code
+main PROC
+    mov edx, OFFSET msgOrig
+    call WriteString
+    call PrintArray
+
+    mShiftDoublewords arr, R, 4
+    mov edx, OFFSET msgRight
+    call WriteString
+    call PrintArray
+
+    mShiftDoublewords arr, L, 4
+    mov edx, OFFSET msgLeft
+    call WriteString
+    call PrintArray
+
+    exit
+main ENDP
+
+PrintArray PROC
+    ; 최상위 DWORD부터 최하위 DWORD 순서로 출력
+    mov esi, OFFSET arr + ((LENGTHOF arr) - 1) * 4
+    mov ecx, LENGTHOF arr
+PLoop:
+    mov eax, [esi]
+    call WriteHex
+    mov al, ' '
+    call WriteChar
+    sub esi, 4
+    loop PLoop
+    call Crlf
+    ret
+PrintArray ENDP
+END main
+10. Three-Operand Instructions번역: 3개의 피연산자(부호 있는 32비트 메모리 더블워드)를 사용하는 산술 매크로 add3, sub3, mul3, div3를 작성하시오. EAX는 매크로 연산용으로 예약되어 보존하지 않지만, 수정되는 다른 레지스터는 반드시 보존해야 합니다. 여러 연산이 포함된 4개의 산술식을 구현해 매크로를 테스트하는 프로그램을 작성하시오.AssemblyINCLUDE Irvine32.inc
+
+; destination = source1 + source2
+add3 MACRO destination, source1, source2
+    mov eax, source1
+    add eax, source2
+    mov destination, eax
+ENDM
+
+; destination = source1 - source2
+sub3 MACRO destination, source1, source2
+    mov eax, source1
+    sub eax, source2
+    mov destination, eax
+ENDM
+
+; destination = source1 * source2
+mul3 MACRO destination, source1, source2
+    push edx
+    mov eax, source1
+    imul source2
+    mov destination, eax
+    pop edx
+ENDM
+
+; destination = source1 / source2
+div3 MACRO destination, source1, source2
+    push edx
+    mov eax, source1
+    cdq
+    idiv source2
+    mov destination, eax
+    pop edx
+ENDM
+
+.data
+w SDWORD 12
+x SDWORD ?
+y SDWORD 8
+z SDWORD -4
+temp1 SDWORD ?
+temp2 SDWORD ?
+
+msg1 BYTE "1) x = (w + y) * z         = ", 0
+msg2 BYTE "2) x = (w - y) / z         = ", 0
+msg3 BYTE "3) x = (w * y) + (z * 5)   = ", 0
+msg4 BYTE "4) x = ((w + y) - z) / 2   = ", 0
+five SDWORD 5
+two  SDWORD 2
+
+.code
+main PROC
+    ; 식 1: x = (w + y) * z  -> (12 + 8) * -4 = -80
+    add3 temp1, w, y
+    mul3 x, temp1, z
+    mov edx, OFFSET msg1
+    call WriteString
+    mov eax, x
+    call WriteInt
+    call Crlf
+
+    ; 식 2: x = (w - y) / z  -> (12 - 8) / -4 = -1
+    sub3 temp1, w, y
+    div3 x, temp1, z
+    mov edx, OFFSET msg2
+    call WriteString
+    mov eax, x
+    call WriteInt
+    call Crlf
+
+    ; 식 3: x = (w * y) + (z * 5) -> (12 * 8) + (-4 * 5) = 76
+    mul3 temp1, w, y
+    mul3 temp2, z, five
+    add3 x, temp1, temp2
+    mov edx, OFFSET msg3
+    call WriteString
+    mov eax, x
+    call WriteInt
+    call Crlf
+
+    ; 식 4: x = ((w + y) - z) / 2 -> ((12 + 8) - (-4)) / 2 = 12
+    add3 temp1, w, y
+    sub3 temp2, temp1, z
+    div3 x, temp2, two
+    mov edx, OFFSET msg4
+    call WriteString
+    mov eax, x
+    call WriteInt
+    call Crlf
+
+    exit
+main ENDP
+END main
